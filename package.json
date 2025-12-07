@@ -1,0 +1,62 @@
+{
+  "name": "skillswap-api",
+  "version": "1.0.0",
+  "description": "API сервер для SkillSwap",
+  "main": "dist/index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "type-check": "tsc --noEmit",
+    "import": "tsx src/scripts/import-data.ts",
+    "init-db": "tsx src/scripts/import-data.ts",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:register": "jest tests/register.test.ts",
+    "test:utils": "jest tests/utils",
+    "test:routes": "jest tests/routes",
+    "test:create-image": "tsx tests/create-test-image.ts"
+  },
+  "keywords": [],
+  "author": "Sergei Denisenko",
+  "license": "MIT",
+  "copyright": "Copyright (c) 2025 Sergei Denisenko",
+  "dependencies": {
+    "bcrypt": "^5.1.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.1",
+    "express-rate-limit": "^8.2.1",
+    "jsonwebtoken": "^9.0.2",
+    "multer": "^2.0.2",
+    "sharp": "^0.33.0",
+    "zod": "^4.1.13"
+  },
+  "devDependencies": {
+    "@types/bcrypt": "^5.0.2",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/form-data": "^2.5.0",
+    "@types/jest": "^29.5.14",
+    "@types/jsonwebtoken": "^9.0.7",
+    "@types/multer": "^1.4.12",
+    "@types/node": "^22.10.2",
+    "axios": "^1.7.7",
+    "form-data": "^4.0.1",
+    "jest": "^29.7.0",
+    "jest-mock-extended": "^4.0.0",
+    "ts-jest": "^29.1.2",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  },
+  "overrides": {
+    "rimraf": "^5.0.0",
+    "glob": "^10.0.0",
+    "graceful-fs": "^4.2.11",
+    "glob-parent": "^6.0.0",
+    "minimatch": "^10.0.0",
+    "jws": "^4.0.1"
+  }
+}

@@ -1,0 +1,13 @@
+node_modules/
+dist/
+*.log
+logs/
+.env
+.DS_Store
+
+# Загруженные файлы
+public/uploads/
+
+# База данных (если не нужны примеры данных)
+public/db/
+
