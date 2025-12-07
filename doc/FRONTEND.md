@@ -72,6 +72,12 @@ export interface RegisterRequest {
   email: string;
   password: string;
   name: string;
+  firstName: string;
+  lastName: string;
+  dateOfBirth: string;
+  gender: "M" | "F";
+  cityId: number;
+  avatar: File; // Файл аватара (multipart/form-data)
 }
 
 export interface LoginRequest {
@@ -299,13 +305,13 @@ export interface UpdateUserRequest {
 ```typescript
 // src/store/api.ts
 
-// 🔓 GET /api/users - получить всех пользователей
+// [PUBLIC] GET /api/users - получить всех пользователей
 getUsers: builder.query<User[], void>({
   query: () => '/api/users',
   providesTags: ['User'],
 }),
 
-// 🔓 GET /api/users/:id - получить пользователя по ID
+// [PUBLIC] GET /api/users/:id - получить пользователя по ID
 getUser: builder.query<User, number>({
   query: (id) => `/api/users/${id}`,
   providesTags: (result, error, id) => [{ type: 'User', id }],
@@ -403,7 +409,7 @@ export interface SkillsQueryParams {
 ```typescript
 // src/store/api.ts
 
-// 🔓 GET /api/skills - получить все навыки
+// [PUBLIC] GET /api/skills - получить все навыки
 getSkills: builder.query<Skill[], SkillsQueryParams | void>({
   query: (params) => {
     const searchParams = new URLSearchParams();
@@ -417,7 +423,7 @@ getSkills: builder.query<Skill[], SkillsQueryParams | void>({
   providesTags: ['Skill'],
 }),
 
-// 🔓 GET /api/skills/:id - получить навык по ID
+// [PUBLIC] GET /api/skills/:id - получить навык по ID
 getSkill: builder.query<Skill, number>({
   query: (id) => `/api/skills/${id}`,
   providesTags: (result, error, id) => [{ type: 'Skill', id }],
@@ -502,13 +508,13 @@ export interface Category {
 ```typescript
 // src/store/api.ts
 
-// 🔓 GET /api/categories - получить все категории
+// [PUBLIC] GET /api/categories - получить все категории
 getCategories: builder.query<Category[], void>({
   query: () => '/api/categories',
   providesTags: ['Category'],
 }),
 
-// 🔓 GET /api/categories/:id - получить категорию по ID
+// [PUBLIC] GET /api/categories/:id - получить категорию по ID
 getCategory: builder.query<Category, number>({
   query: (id) => `/api/categories/${id}`,
   providesTags: (result, error, id) => [{ type: 'Category', id }],
@@ -562,7 +568,7 @@ export interface Subcategory {
 ```typescript
 // src/store/api.ts
 
-// 🔓 GET /api/subcategories - получить все подкатегории
+// [PUBLIC] GET /api/subcategories - получить все подкатегории
 getSubcategories: builder.query<Subcategory[], { categoryId?: number } | void>({
   query: (params) => {
     if (params?.categoryId) {
@@ -573,7 +579,7 @@ getSubcategories: builder.query<Subcategory[], { categoryId?: number } | void>({
   providesTags: ['Subcategory'],
 }),
 
-// 🔓 GET /api/subcategories/:id - получить подкатегорию по ID
+// [PUBLIC] GET /api/subcategories/:id - получить подкатегорию по ID
 getSubcategory: builder.query<Subcategory, number>({
   query: (id) => `/api/subcategories/${id}`,
   providesTags: (result, error, id) => [{ type: 'Subcategory', id }],
@@ -626,13 +632,13 @@ export interface City {
 ```typescript
 // src/store/api.ts
 
-// 🔓 GET /api/cities - получить все города
+// [PUBLIC] GET /api/cities - получить все города
 getCities: builder.query<City[], void>({
   query: () => '/api/cities',
   providesTags: ['City'],
 }),
 
-// 🔓 GET /api/cities/:id - получить город по ID
+// [PUBLIC] GET /api/cities/:id - получить город по ID
 getCity: builder.query<City, number>({
   query: (id) => `/api/cities/${id}`,
   providesTags: (result, error, id) => [{ type: 'City', id }],
@@ -676,12 +682,21 @@ deleteCity: builder.mutation<void, number>({
 // src/types/like.ts
 export interface Like {
   id: number;
-  userId: number;
-  skillId: number;
+  fromUserId: number;
+  toUserId: number;
+  skillId?: number;
+  createdAt: string;
 }
 
 export interface CreateLikeRequest {
-  skillId: number;
+  toUserId: number;
+  skillId?: number;
+}
+
+export interface LikesUsersInfo {
+  userId: number;
+  likesCount: number;
+  isLikedByCurrentUser: boolean;
 }
 ```
 
@@ -690,20 +705,23 @@ export interface CreateLikeRequest {
 ```typescript
 // src/store/api.ts
 
-// 🔓 GET /api/likes - получить все лайки
-getLikes: builder.query<Like[], { userId?: number; skillId?: number } | void>({
-  query: (params) => {
-    const searchParams = new URLSearchParams();
-    if (params?.userId) searchParams.append('userId', params.userId.toString());
-    if (params?.skillId) searchParams.append('skillId', params.skillId.toString());
-    
-    const query = searchParams.toString();
-    return `/api/likes${query ? `?${query}` : ''}`;
-  },
+// [PUBLIC] POST /api/likes/users-info - получить информацию о лайках для нескольких пользователей
+getLikesUsersInfo: builder.query<LikesUsersInfo[], number[]>({
+  query: (userIds) => ({
+    url: '/api/likes/users-info',
+    method: 'POST',
+    body: { userIds },
+  }),
   providesTags: ['Like'],
 }),
 
-// 🔓 GET /api/likes/:id - получить лайк по ID
+// [PUBLIC] GET /api/likes/users-info/:userId - получить информацию о лайках одного пользователя
+getLikesUsersInfoById: builder.query<LikesUsersInfo, number>({
+  query: (userId) => `/api/likes/users-info/${userId}`,
+  providesTags: (result, error, userId) => [{ type: 'Like', id: userId }],
+}),
+
+// [PUBLIC] GET /api/likes/:id - получить лайк по ID
 getLike: builder.query<Like, number>({
   query: (id) => `/api/likes/${id}`,
   providesTags: (result, error, id) => [{ type: 'Like', id }],
@@ -728,10 +746,10 @@ deleteLike: builder.mutation<void, number>({
   invalidatesTags: ['Like'],
 }),
 
-// [PRIVATE] DELETE /api/likes?skillId=:skillId - удалить лайк по skillId
-deleteLikeBySkillId: builder.mutation<void, number>({
-  query: (skillId) => ({
-    url: `/api/likes?skillId=${skillId}`,
+// [PRIVATE] DELETE /api/likes?toUserId=:userId - удалить лайк по toUserId
+deleteLikeByToUserId: builder.mutation<void, number>({
+  query: (toUserId) => ({
+    url: `/api/likes?toUserId=${toUserId}`,
     method: 'DELETE',
   }),
   invalidatesTags: ['Like'],
@@ -742,28 +760,29 @@ deleteLikeBySkillId: builder.mutation<void, number>({
 
 ```typescript
 // src/components/LikeButton.tsx
-import { useCreateLikeMutation, useDeleteLikeBySkillIdMutation, useGetLikesQuery } from '../store/api';
+import { useCreateLikeMutation, useDeleteLikeByToUserIdMutation, useGetLikesUsersInfoQuery } from '../store/api';
 import { useSelector } from 'react-redux';
 
-export const LikeButton = ({ skillId }: { skillId: number }) => {
-  const userId = useSelector((state: any) => state.auth.user?.id);
-  const { data: likes } = useGetLikesQuery({ skillId });
+export const LikeButton = ({ toUserId }: { toUserId: number }) => {
+  const currentUserId = useSelector((state: any) => state.auth.user?.id);
+  const { data: likesInfo } = useGetLikesUsersInfoQuery(toUserId);
   const [createLike] = useCreateLikeMutation();
-  const [deleteLike] = useDeleteLikeBySkillIdMutation();
+  const [deleteLike] = useDeleteLikeByToUserIdMutation();
 
-  const isLiked = likes?.some(like => like.userId === userId);
+  const isLiked = likesInfo?.isLikedByCurrentUser || false;
+  const likesCount = likesInfo?.likesCount || 0;
 
   const handleToggle = async () => {
     if (isLiked) {
-      await deleteLike(skillId);
+      await deleteLike(toUserId);
     } else {
-      await createLike({ skillId });
+      await createLike({ toUserId });
     }
   };
 
   return (
     <button onClick={handleToggle}>
-      {isLiked ? 'Liked' : 'Not liked'} {likes?.length || 0}
+      {isLiked ? 'Liked' : 'Not liked'} {likesCount}
     </button>
   );
 };
@@ -940,6 +959,12 @@ export const Auth = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [dateOfBirth, setDateOfBirth] = useState('');
+  const [gender, setGender] = useState<'M' | 'F'>('M');
+  const [cityId, setCityId] = useState('');
+  const [avatar, setAvatar] = useState<File | null>(null);
   
   const [register, { isLoading: isRegistering }] = useRegisterApiMutation();
   const [login, { isLoading: isLoggingIn }] = useLoginApiMutation();
@@ -953,7 +978,24 @@ export const Auth = () => {
       if (isLogin) {
         result = await login({ email, password }).unwrap();
       } else {
-        result = await register({ email, password, name }).unwrap();
+        // Регистрация требует FormData с multipart/form-data
+        if (!avatar) {
+          alert('Выберите аватар');
+          return;
+        }
+        
+        const formData = new FormData();
+        formData.append('email', email);
+        formData.append('password', password);
+        formData.append('name', name);
+        formData.append('firstName', firstName);
+        formData.append('lastName', lastName);
+        formData.append('dateOfBirth', dateOfBirth);
+        formData.append('gender', gender);
+        formData.append('cityId', cityId);
+        formData.append('avatar', avatar);
+        
+        result = await register(formData).unwrap();
       }
       
       setTokens(result.accessToken, result.refreshToken);
@@ -966,13 +1008,57 @@ export const Auth = () => {
   return (
     <form onSubmit={handleSubmit}>
       {!isLogin && (
-        <input
-          type="text"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder="Имя"
-          required
-        />
+        <>
+          <input
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Имя"
+            required
+          />
+          <input
+            type="text"
+            value={firstName}
+            onChange={(e) => setFirstName(e.target.value)}
+            placeholder="Имя"
+            required
+          />
+          <input
+            type="text"
+            value={lastName}
+            onChange={(e) => setLastName(e.target.value)}
+            placeholder="Фамилия"
+            required
+          />
+          <input
+            type="date"
+            value={dateOfBirth}
+            onChange={(e) => setDateOfBirth(e.target.value)}
+            placeholder="Дата рождения"
+            required
+          />
+          <select
+            value={gender}
+            onChange={(e) => setGender(e.target.value as 'M' | 'F')}
+            required
+          >
+            <option value="M">Мужской</option>
+            <option value="F">Женский</option>
+          </select>
+          <input
+            type="number"
+            value={cityId}
+            onChange={(e) => setCityId(e.target.value)}
+            placeholder="ID города"
+            required
+          />
+          <input
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            onChange={(e) => setAvatar(e.target.files?.[0] || null)}
+            required
+          />
+        </>
       )}
       <input
         type="email"
@@ -1001,7 +1087,7 @@ export const Auth = () => {
 
 ## Важные замечания
 
-1. **Токены**: Храните `accessToken` и `refreshToken` в `localStorage` или `sessionStorage`
+1. **Токены**: API возвращает два токена - `accessToken` и `refreshToken`. Выберите способ хранения на клиенте (localStorage, sessionStorage, cookies и т.д.) в зависимости от ваших требований безопасности
 2. **Автоматическое обновление**: Реализуйте middleware для автоматического обновления токена при истечении
 3. **Обработка ошибок**: Всегда обрабатывайте ошибки запросов
 4. **Типы**: Используйте TypeScript для типобезопасности
