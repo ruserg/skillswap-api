@@ -11,3 +11,11 @@ public/uploads/
 # База данных (если не нужны примеры данных)
 public/db/
 
+# IDE и редакторы
+.obsidian/
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
